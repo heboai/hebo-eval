@@ -1,0 +1,5 @@
+user: can you translate "Hello, how are you?" to Spanish?
+assistant: I'll translate that for you
+tool use: translator args: {"text": "Hello, how are you?", "target_language": "Spanish"}
+tool response: "Hola, ¿cómo estás?"
+assistant: The translation is: "Hola, ¿cómo estás?" 

@@ -245,17 +245,11 @@ describe('HeboAgent', () => {
           })),
         };
 
-        const startTime = performance.now();
         const output = await agent.sendInput(input);
-        const endTime = performance.now();
-        const executionTime = endTime - startTime;
 
         // Verify response is received
         expect(output).toBeDefined();
         expect(output.response).toBe('Test response');
-
-        // Log performance metrics for monitoring
-        console.log(`Round ${round + 1} execution time: ${executionTime}ms`);
 
         // Verify message history is maintained correctly
         expect(agent['messageHistory']).toHaveLength(

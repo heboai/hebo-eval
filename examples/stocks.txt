@@ -1,0 +1,5 @@
+user: what's the current price of Apple stock?
+assistant: I'll check the current stock price
+tool use: stock_check args: {"symbol": "AAPL"}
+tool response: AAPL: $175.25 (+2.3%)
+assistant: Apple's stock (AAPL) is currently trading at $175.25, up 2.3% today

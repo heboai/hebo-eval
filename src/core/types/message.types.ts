@@ -42,7 +42,11 @@ export enum MessageRole {
  */
 export interface ToolUsage {
   name: string;
-  args: Record<string, unknown>;
+  /**
+   * Arguments for the tool as a JSON string
+   * Example: "{\"operation\": \"add\", \"numbers\": [2, 2]}"
+   */
+  args: string;
 }
 
 /**

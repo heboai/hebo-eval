@@ -1,0 +1,7 @@
+user: hello
+assistant: hello how can I help you?
+user: can you please search the weather in new york for me?
+assistant: sure
+tool use: weather_search args: {"location": "New York"}
+tool response: New York, NY, USA: 59 °F Precipitation: 80% Humidity: 96% Wind: 2 mph
+assistant: It's rainy in New York, NY, today, with a temperature of 59°F, 80% precipitation, 96% humidity, and light 2 mph winds. Be prepared for wet conditions!

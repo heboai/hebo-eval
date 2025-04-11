@@ -1,0 +1,8 @@
+user: what's the weather like in London and Paris?
+assistant: I'll check the weather for both cities
+tool use: weather_search args: {"location": "London"}
+tool response: London, UK: 15°C, Cloudy
+assistant: In London it's 15°C and cloudy
+tool use: weather_search args: {"location": "Paris"}
+tool response: Paris, France: 18°C, Sunny
+assistant: In Paris it's 18°C and sunny 
