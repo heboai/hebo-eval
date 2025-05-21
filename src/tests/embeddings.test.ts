@@ -3,9 +3,9 @@ import {
   EmbeddingProviderFactory,
   EmbeddingSystemConfig,
 } from '../embeddings/config/embedding.config';
-import { LiteLLMEmbeddingProvider } from '../embeddings/implementations/litellm-embedding-provider';
-import { OpenAIEmbeddingProvider } from '../embeddings/implementations/openai-embedding-provider';
-import { EmbeddingResponse } from '../embeddings/types/embedding.types';
+import { LiteLLMEmbeddingProvider } from '../embeddings/implementations/litellm-embedding-provider.js';
+import { OpenAIEmbeddingProvider } from '../embeddings/implementations/openai-embedding-provider.js';
+import { EmbeddingResponse } from '../embeddings/types/embedding.types.js';
 
 // Mock fetch
 const mockFetch = jest.fn<typeof fetch>();
@@ -32,10 +32,9 @@ describe('Embedding System', () => {
     it('should create LiteLLM provider with correct configuration', () => {
       const config: EmbeddingSystemConfig = {
         defaultProvider: 'litellm',
-        litellm: {
-          model: 'test-model',
-          baseUrl: 'http://test-url',
-        },
+        model: 'test-model',
+        baseUrl: 'http://test-url',
+        apiKey: 'test-key',
       };
 
       const provider = EmbeddingProviderFactory.createProvider(config);
@@ -44,17 +43,16 @@ describe('Embedding System', () => {
         provider: 'litellm',
         model: 'test-model',
         baseUrl: 'http://test-url',
+        apiKey: 'test-key',
       });
     });
 
     it('should create OpenAI provider with correct configuration', () => {
       const config: EmbeddingSystemConfig = {
         defaultProvider: 'openai',
-        openai: {
-          model: 'test-model',
-          apiKey: 'test-key',
-          baseUrl: 'http://test-url',
-        },
+        model: 'test-model',
+        baseUrl: 'http://test-url',
+        apiKey: 'test-key',
       };
 
       const provider = EmbeddingProviderFactory.createProvider(config);
@@ -63,12 +61,15 @@ describe('Embedding System', () => {
         provider: 'openai',
         model: 'test-model',
         baseUrl: 'http://test-url',
+        apiKey: 'test-key',
       });
     });
 
     it('should throw error for invalid provider', () => {
       const config = {
         defaultProvider: 'invalid' as 'litellm' | 'openai',
+        model: 'test-model',
+        apiKey: 'test-key',
       };
 
       expect(() => EmbeddingProviderFactory.createProvider(config)).toThrow(
@@ -76,38 +77,31 @@ describe('Embedding System', () => {
       );
     });
 
-    it('should throw error for missing OpenAI API key', () => {
+    it('should throw error for missing API key', () => {
       const config: EmbeddingSystemConfig = {
         defaultProvider: 'openai',
-        openai: {
-          model: 'test-model',
-          apiKey: '',
-          baseUrl: 'http://test-url',
-        },
+        model: 'test-model',
+        baseUrl: 'http://test-url',
+        apiKey: '',
       };
 
       expect(() => EmbeddingProviderFactory.createProvider(config)).toThrow(
-        'OpenAI API key is required',
+        'API key is required',
       );
     });
 
     it('should load configuration from environment variables', () => {
       process.env.EMBEDDING_PROVIDER = 'litellm';
-      process.env.LITELLM_EMBEDDING_MODEL = 'test-model';
-      process.env.LITELLM_BASE_URL = 'http://test-url';
+      process.env.EMBEDDING_MODEL = 'test-model';
+      process.env.EMBEDDING_BASE_URL = 'http://test-url';
+      process.env.HEBO_API_KEY = 'test-key';
 
       const config = EmbeddingProviderFactory.loadFromEnv();
       expect(config).toEqual({
         defaultProvider: 'litellm',
-        litellm: {
-          model: 'test-model',
-          baseUrl: 'http://test-url',
-        },
-        openai: {
-          model: 'text-embedding-3-small',
-          apiKey: '',
-          baseUrl: undefined,
-        },
+        model: 'test-model',
+        baseUrl: 'http://test-url',
+        apiKey: 'test-key',
       });
     });
   });
@@ -131,11 +125,13 @@ describe('Embedding System', () => {
       const provider = new LiteLLMEmbeddingProvider({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await provider.initialize({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       const result = await provider.generateEmbedding('test text');
@@ -154,11 +150,13 @@ describe('Embedding System', () => {
       const provider = new LiteLLMEmbeddingProvider({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await provider.initialize({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await expect(provider.generateEmbedding('test text')).rejects.toThrow(
@@ -170,12 +168,14 @@ describe('Embedding System', () => {
       const provider = new LiteLLMEmbeddingProvider({
         provider: 'litellm',
         model: '',
+        apiKey: 'test-key',
       });
 
       await expect(
         provider.initialize({
           provider: 'litellm',
           model: '',
+          apiKey: 'test-key',
         }),
       ).rejects.toThrow('Model is required for LiteLLM embedding provider');
     });
@@ -198,7 +198,12 @@ describe('Embedding System', () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           data: [{ embedding: mockResponse.embedding }],
-          usage: mockResponse.metadata?.usage,
+          model: 'test-model',
+          object: 'list',
+          usage: {
+            prompt_tokens: 10,
+            total_tokens: 10,
+          },
         }),
       );
 
@@ -206,6 +211,7 @@ describe('Embedding System', () => {
         {
           provider: 'openai',
           model: 'test-model',
+          apiKey: 'test-key',
         },
         'test-key',
       );
@@ -213,6 +219,7 @@ describe('Embedding System', () => {
       await provider.initialize({
         provider: 'openai',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       const result = await provider.generateEmbedding('test text');
@@ -225,13 +232,14 @@ describe('Embedding System', () => {
 
     it('should handle API errors', async () => {
       mockFetch.mockResolvedValueOnce(
-        createMockResponse({ error: 'Unauthorized' }, 401),
+        createMockResponse({ error: 'Internal Server Error' }, 500),
       );
 
       const provider = new OpenAIEmbeddingProvider(
         {
           provider: 'openai',
           model: 'test-model',
+          apiKey: 'test-key',
         },
         'test-key',
       );
@@ -239,28 +247,31 @@ describe('Embedding System', () => {
       await provider.initialize({
         provider: 'openai',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await expect(provider.generateEmbedding('test text')).rejects.toThrow(
-        'HTTP error! status: 401',
+        'HTTP error! status: 500',
       );
     });
 
-    it('should validate API key presence', async () => {
+    it('should validate model presence', async () => {
       const provider = new OpenAIEmbeddingProvider(
         {
           provider: 'openai',
-          model: 'test-model',
+          model: '',
+          apiKey: 'test-key',
         },
-        '',
+        'test-key',
       );
 
       await expect(
         provider.initialize({
           provider: 'openai',
-          model: 'test-model',
+          model: '',
+          apiKey: 'test-key',
         }),
-      ).rejects.toThrow('API key is required for OpenAI embedding provider');
+      ).rejects.toThrow('Model is required for OpenAI embedding provider');
     });
   });
 
@@ -269,17 +280,20 @@ describe('Embedding System', () => {
       const provider = new LiteLLMEmbeddingProvider({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await provider.initialize({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await expect(
         provider.initialize({
           provider: 'litellm',
           model: 'test-model',
+          apiKey: 'test-key',
         }),
       ).rejects.toThrow('Embedding provider is already initialized');
     });
@@ -288,6 +302,7 @@ describe('Embedding System', () => {
       const provider = new LiteLLMEmbeddingProvider({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await expect(provider.generateEmbedding('test')).rejects.toThrow(
@@ -299,11 +314,13 @@ describe('Embedding System', () => {
       const provider = new LiteLLMEmbeddingProvider({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await provider.initialize({
         provider: 'litellm',
         model: 'test-model',
+        apiKey: 'test-key',
       });
 
       await provider.cleanup();
@@ -313,6 +330,7 @@ describe('Embedding System', () => {
         provider.initialize({
           provider: 'litellm',
           model: 'updated-model',
+          apiKey: 'test-key',
         }),
       ).resolves.not.toThrow();
 

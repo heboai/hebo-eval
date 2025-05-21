@@ -1,4 +1,4 @@
-import { ParseError } from './errors';
+import { ParseError } from './errors.js';
 
 /**
  * Represents an element in the test case text
@@ -49,6 +49,8 @@ export class TestCaseParser {
     'user',
     'assistant',
     'human agent',
+    'tool use',
+    'tool response',
   ]);
 
   /**
@@ -124,6 +126,7 @@ export class TestCaseParser {
   public tokenize(text: string): TestCaseElement[] {
     const lines = text.split('\n');
     const elements: TestCaseElement[] = [];
+    let currentRole: string | null = null;
 
     for (const line of lines) {
       if (line.trim() === '') continue;
@@ -133,13 +136,29 @@ export class TestCaseParser {
         if (pattern.test(line)) {
           handle(line, elements);
           handled = true;
+          // Update current role if this was a role marker
+          if (pattern === TestCaseParser.PATTERNS.ROLE) {
+            const match = line.match(/^\s*(\w+):/i);
+            if (match) {
+              currentRole = match[1].toLowerCase().trim();
+            }
+          }
           break;
         }
       }
 
       if (!handled) {
-        // If no pattern matches, treat as content continuation
-        elements.push({ type: 'content', value: line.trim() });
+        // If no pattern matches but we have a current role, treat as content
+        if (currentRole) {
+          elements.push({
+            type: 'content',
+            value: line.trim(),
+          });
+        } else {
+          throw new ParseError(
+            'All messages must have a role marker (e.g. "user:", "assistant:", "human agent:", "tool use:", "tool response:")',
+          );
+        }
       }
     }
 

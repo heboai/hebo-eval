@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import { BaseAgent } from '../agents/interfaces/base-agent';
+import { BaseAgent } from '../agents/interfaces/base-agent.js';
 import {
   AgentConfig,
   AgentInput,
   AgentOutput,
-} from '../agents/types/agent.types';
-import { HeboAgent } from '../agents/implementations/hebo-agent';
-import { BaseMessage, MessageRole } from '../core/types/message.types';
-import { roleMapper } from '../core/utils/role-mapper';
+} from '../agents/types/agent.types.js';
+import { HeboAgent } from '../agents/implementations/hebo-agent.js';
+import { BaseMessage, MessageRole } from '../core/types/message.types.js';
+import { roleMapper } from '../core/utils/role-mapper.js';
 
 /**
  * Test implementation of BaseAgent for testing abstract functionality
@@ -71,13 +71,13 @@ describe('BaseAgent', () => {
   describe('Authentication', () => {
     it('should authenticate with valid API key', async () => {
       await agent.initialize(config);
-      await agent.authenticate({ apiKey: 'test-key' });
+      await agent.authenticate({ agentKey: 'test-key' });
       // No error means success
     });
 
     it('should throw error if not initialized before authentication', async () => {
       await expect(
-        agent.authenticate({ apiKey: 'test-key' }),
+        agent.authenticate({ agentKey: 'test-key' }),
       ).rejects.toThrow();
     });
   });
@@ -85,7 +85,7 @@ describe('BaseAgent', () => {
   describe('Input Processing', () => {
     it('should process input after initialization and authentication', async () => {
       await agent.initialize(config);
-      await agent.authenticate({ apiKey: 'test-key' });
+      await agent.authenticate({ agentKey: 'test-key' });
 
       const input: AgentInput = {
         messages: [{ role: MessageRole.USER, content: 'Hello' }],
@@ -118,7 +118,7 @@ describe('HeboAgent', () => {
   describe('Network Error Handling', () => {
     it('should handle network failure gracefully', async () => {
       await agent.initialize(config);
-      await agent.authenticate({ apiKey: 'test-key' });
+      await agent.authenticate({ agentKey: 'test-key' });
 
       // Mock fetch to simulate network errors
       const originalFetch = global.fetch;
@@ -145,7 +145,7 @@ describe('HeboAgent', () => {
 
     it('should handle HTTP error responses gracefully', async () => {
       await agent.initialize(config);
-      await agent.authenticate({ apiKey: 'test-key' });
+      await agent.authenticate({ agentKey: 'test-key' });
 
       // Mock fetch to simulate HTTP error
       const originalFetch = global.fetch;
@@ -155,6 +155,10 @@ describe('HeboAgent', () => {
           status: 500,
           statusText: 'Internal Server Error',
           json: () => Promise.resolve({ error: { message: 'Server error' } }),
+          clone: () => ({
+            text: () =>
+              Promise.resolve('{"error": {"message": "Server error"}}'),
+          }),
         } as Response);
       }) as jest.MockedFunction<typeof fetch>;
 
@@ -179,7 +183,7 @@ describe('HeboAgent', () => {
   describe('Message History', () => {
     it('should maintain conversation history', async () => {
       await agent.initialize(config);
-      await agent.authenticate({ apiKey: 'test-key' });
+      await agent.authenticate({ agentKey: 'test-key' });
 
       const input: AgentInput = {
         messages: [
@@ -204,7 +208,7 @@ describe('HeboAgent', () => {
   describe('Memory Management', () => {
     it('should handle multiple consecutive inputs without performance degradation', async () => {
       await agent.initialize(config);
-      await agent.authenticate({ apiKey: 'test-key' });
+      await agent.authenticate({ agentKey: 'test-key' });
 
       // Mock fetch to simulate API responses
       const originalFetch = global.fetch;
@@ -230,6 +234,28 @@ describe('HeboAgent', () => {
                 total_tokens: 15,
               },
             }),
+          clone: () => ({
+            text: () =>
+              Promise.resolve(
+                JSON.stringify({
+                  id: 'test-id',
+                  model: config.model,
+                  choices: [
+                    {
+                      message: {
+                        role: 'assistant',
+                        content: 'Test response',
+                      },
+                    },
+                  ],
+                  usage: {
+                    prompt_tokens: 10,
+                    completion_tokens: 5,
+                    total_tokens: 15,
+                  },
+                }),
+              ),
+          }),
         } as Response);
       }) as jest.MockedFunction<typeof fetch>;
 

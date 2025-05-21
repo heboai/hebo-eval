@@ -52,7 +52,7 @@ export interface ApiKeyAuthConfig {
   /**
    * The API key to be used for authentication
    */
-  apiKey: string;
+  agentKey: string;
 
   /**
    * The header name where the API key should be sent

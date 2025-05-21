@@ -2,10 +2,12 @@ import {
   EmbeddingConfig,
   LiteLLMEmbeddingConfig,
   OpenAIEmbeddingConfig,
-} from '../types/embedding.types';
-import { LiteLLMEmbeddingProvider } from '../implementations/litellm-embedding-provider';
-import { OpenAIEmbeddingProvider } from '../implementations/openai-embedding-provider';
-import { IEmbeddingProvider } from '../interfaces/embedding-provider.interface';
+  HeboEmbeddingConfig,
+} from '../types/embedding.types.js';
+import { LiteLLMEmbeddingProvider } from '../implementations/litellm-embedding-provider.js';
+import { OpenAIEmbeddingProvider } from '../implementations/openai-embedding-provider.js';
+import { HeboEmbeddingProvider } from '../implementations/hebo-embedding-provider.js';
+import { IEmbeddingProvider } from '../interfaces/embedding-provider.interface.js';
 
 /**
  * Configuration options for the embedding system
@@ -14,24 +16,22 @@ export interface EmbeddingSystemConfig {
   /**
    * The default embedding provider to use
    */
-  defaultProvider: 'litellm' | 'openai';
+  defaultProvider: 'litellm' | 'openai' | 'hebo';
 
   /**
-   * Configuration for the LiteLLM provider
+   * The model to use for embeddings
    */
-  litellm?: {
-    model: string;
-    baseUrl?: string;
-  };
+  model: string;
 
   /**
-   * Configuration for the OpenAI provider
+   * Base URL for the embedding API
    */
-  openai?: {
-    model: string;
-    apiKey: string;
-    baseUrl?: string;
-  };
+  baseUrl?: string;
+
+  /**
+   * API key for the embedding provider
+   */
+  apiKey: string;
 }
 
 /**
@@ -53,12 +53,20 @@ export class EmbeddingProviderFactory {
           providerConfig as LiteLLMEmbeddingConfig,
         );
       case 'openai':
-        if (!config.openai?.apiKey) {
-          throw new Error('OpenAI API key is required');
+        if (!config.apiKey) {
+          throw new Error('API key is required');
         }
         return new OpenAIEmbeddingProvider(
           providerConfig as OpenAIEmbeddingConfig,
-          config.openai.apiKey,
+          config.apiKey,
+        );
+      case 'hebo':
+        if (!config.apiKey) {
+          throw new Error('API key is required');
+        }
+        return new HeboEmbeddingProvider(
+          providerConfig as HeboEmbeddingConfig,
+          config.apiKey,
         );
       default:
         throw new Error(
@@ -78,28 +86,16 @@ export class EmbeddingProviderFactory {
   ): EmbeddingConfig {
     const provider = config.defaultProvider;
 
-    switch (provider) {
-      case 'litellm':
-        if (!config.litellm?.model) {
-          throw new Error('LiteLLM model is required');
-        }
-        return {
-          provider: 'litellm',
-          model: config.litellm.model,
-          baseUrl: config.litellm.baseUrl,
-        };
-      case 'openai':
-        if (!config.openai?.model) {
-          throw new Error('OpenAI model is required');
-        }
-        return {
-          provider: 'openai',
-          model: config.openai.model,
-          baseUrl: config.openai.baseUrl,
-        };
-      default:
-        throw new Error(`Unsupported provider: ${provider as string}`);
+    if (!config.model) {
+      throw new Error('Embedding model is required');
     }
+
+    return {
+      provider,
+      model: config.model,
+      baseUrl: config.baseUrl,
+      apiKey: config.apiKey,
+    };
   }
 
   /**
@@ -108,19 +104,14 @@ export class EmbeddingProviderFactory {
    */
   static loadFromEnv(): EmbeddingSystemConfig {
     const defaultProvider =
-      (process.env.EMBEDDING_PROVIDER as 'litellm' | 'openai') || 'litellm';
+      (process.env.EMBEDDING_PROVIDER as 'litellm' | 'openai' | 'hebo') ||
+      'hebo';
 
     return {
       defaultProvider,
-      litellm: {
-        model: process.env.LITELLM_EMBEDDING_MODEL || 'text-embedding-3-small',
-        baseUrl: process.env.LITELLM_BASE_URL,
-      },
-      openai: {
-        model: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
-        apiKey: process.env.OPENAI_API_KEY || '',
-        baseUrl: process.env.OPENAI_BASE_URL,
-      },
+      model: process.env.EMBEDDING_MODEL || 'hebo-embeddings',
+      baseUrl: process.env.EMBEDDING_BASE_URL || 'https://api.hebo.ai/v1',
+      apiKey: process.env.EMBEDDING_API_KEY || process.env.HEBO_API_KEY || '',
     };
   }
 }

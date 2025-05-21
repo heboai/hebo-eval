@@ -1,4 +1,7 @@
-import { EmbeddingConfig, EmbeddingResponse } from '../types/embedding.types';
+import {
+  EmbeddingConfig,
+  EmbeddingResponse,
+} from '../types/embedding.types.js';
 
 /**
  * Interface for embedding providers

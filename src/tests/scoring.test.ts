@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
-import { ScoringService } from '../scoring/scoring.service';
-import { IEmbeddingProvider } from '../embeddings/interfaces/embedding-provider.interface';
-import { EmbeddingResponse } from '../embeddings/types/embedding.types';
-import { calculateCosineSimilarity } from '../scoring/utils/cosine-similarity';
+import { ScoringService } from '../scoring/scoring.service.js';
+import { IEmbeddingProvider } from '../embeddings/interfaces/embedding-provider.interface.js';
+import { EmbeddingResponse } from '../embeddings/types/embedding.types.js';
+import { calculateCosineSimilarity } from '../scoring/utils/cosine-similarity.js';
 
 describe('Cosine Similarity', () => {
   it('should calculate correct cosine similarity for identical vectors', () => {

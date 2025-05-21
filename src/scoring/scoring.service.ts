@@ -1,5 +1,5 @@
-import { IEmbeddingProvider } from '../embeddings/interfaces/embedding-provider.interface';
-import { calculateCosineSimilarity } from './utils/cosine-similarity';
+import { IEmbeddingProvider } from '../embeddings/interfaces/embedding-provider.interface.js';
+import { calculateCosineSimilarity } from './utils/cosine-similarity.js';
 
 /**
  * Service for calculating similarity scores between strings using embeddings

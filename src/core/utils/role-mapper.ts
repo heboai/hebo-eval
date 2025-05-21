@@ -1,4 +1,4 @@
-import { MessageRole } from '../types/message.types';
+import { MessageRole } from '../types/message.types.js';
 
 /**
  * Maps between different role systems

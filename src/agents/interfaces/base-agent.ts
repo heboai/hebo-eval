@@ -110,7 +110,7 @@ export abstract class BaseAgent implements IAgent {
    * @throws Error if the authentication configuration is invalid
    */
   protected validateAuthConfig(authConfig: AgentAuthConfig): Promise<void> {
-    if (!authConfig.apiKey) {
+    if (!authConfig.agentKey) {
       throw new Error('API key is required for authentication');
     }
     return Promise.resolve();
@@ -127,13 +127,12 @@ export abstract class BaseAgent implements IAgent {
     }
 
     const {
-      apiKey,
+      agentKey,
       headerName = 'Authorization',
-      headerFormat = 'Bearer {apiKey}',
+      headerFormat = 'Bearer {agentKey}',
     } = this.authConfig;
-
     return {
-      [headerName]: headerFormat.replace('{apiKey}', apiKey),
+      [headerName]: headerFormat.replace('{agentKey}', agentKey),
     };
   }
 

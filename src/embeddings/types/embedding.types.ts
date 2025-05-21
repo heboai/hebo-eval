@@ -10,15 +10,20 @@ export interface EmbeddingConfig {
 
   /**
    * The provider to use for embeddings
-   * @example "litellm", "openai"
+   * @example "litellm", "openai", "hebo"
    */
-  provider: 'litellm' | 'openai';
+  provider: 'litellm' | 'openai' | 'hebo';
 
   /**
    * Base URL for the embedding API
-   * @default "https://api.openai.com/v1" for OpenAI, "http://localhost:4000" for LiteLLM
+   * @default "https://api.openai.com/v1" for OpenAI, "https://api.hebo.ai/v1" for LiteLLM, "https://api.hebo.ai/v1" for Hebo
    */
   baseUrl?: string;
+
+  /**
+   * API key for the embedding provider
+   */
+  apiKey: string;
 }
 
 /**
@@ -40,6 +45,18 @@ export interface OpenAIEmbeddingConfig extends EmbeddingConfig {
   provider: 'openai';
   /**
    * The OpenAI model to use
+   * @example "text-embedding-3-small", "text-embedding-3-large"
+   */
+  model: string;
+}
+
+/**
+ * Configuration specific to Hebo embedding provider
+ */
+export interface HeboEmbeddingConfig extends EmbeddingConfig {
+  provider: 'hebo';
+  /**
+   * The Hebo model to use
    * @example "text-embedding-3-small", "text-embedding-3-large"
    */
   model: string;

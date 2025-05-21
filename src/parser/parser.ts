@@ -1,11 +1,11 @@
-import { TestCaseParser } from './tokenizer';
+import { TestCaseParser } from './tokenizer.js';
 import {
   MessageRole,
   BaseMessage,
   TestCase,
-} from '../core/types/message.types';
-import { roleMapper } from '../core/utils/role-mapper';
-import { ParseError } from './errors';
+} from '../core/types/message.types.js';
+import { roleMapper } from '../core/utils/role-mapper.js';
+import { ParseError } from './errors.js';
 
 /**
  * Parser for test case text files
@@ -57,7 +57,7 @@ export class Parser {
 
           // Append content with proper spacing
           if (currentBlock.content) {
-            currentBlock.content += '\n\n';
+            currentBlock.content += '\n';
           }
           currentBlock.content += element.value;
           break;
@@ -70,7 +70,7 @@ export class Parser {
 
           // Parse tool usage and args from the combined value
           const toolValue = element.value;
-          const argsMatch = toolValue.match(/^(.*?)\s*args:\s*(.*)$/);
+          const argsMatch = toolValue.match(/^(.*?)\s*args:\s*(.*)$/i);
 
           if (!argsMatch) {
             throw new ParseError(
@@ -82,10 +82,19 @@ export class Parser {
           const args = argsMatch[2].trim();
 
           // Validate that args is valid JSON
+          let parsedArgs: Record<string, unknown>;
           try {
-            JSON.parse(args);
-          } catch {
-            throw new ParseError('Tool args must be valid JSON');
+            const parsed = JSON.parse(args) as unknown;
+            if (typeof parsed !== 'object' || parsed === null) {
+              throw new Error('Tool args must be a valid object');
+            }
+            parsedArgs = parsed as Record<string, unknown>;
+          } catch (e: unknown) {
+            const errorMessage =
+              e instanceof Error ? e.message : 'Invalid JSON';
+            throw new ParseError(
+              `Tool args must be valid JSON: ${errorMessage}`,
+            );
           }
 
           if (!currentBlock.toolUsages) {
@@ -93,7 +102,7 @@ export class Parser {
           }
           currentBlock.toolUsages.push({
             name: toolName,
-            args: args,
+            args: JSON.stringify(parsedArgs).replace(/"([^"]+)":/g, '"$1": '), // Add space after colon only
           });
           break;
         }
@@ -151,8 +160,15 @@ export class Parser {
       throw new ParseError('Test case must contain at least one message block');
     }
 
-    // Validate tool usage and response sequence
+    // Validate that all messages have a role
     for (const block of messageBlocks) {
+      if (!block.role) {
+        throw new ParseError(
+          'All messages must have a role marker (e.g. "user:", "assistant:", "human agent:")',
+        );
+      }
+
+      // Validate tool usage and response sequence
       if (block.toolUsages && block.toolUsages.length > 0) {
         // Tool usage must be from assistant or human agent
         if (

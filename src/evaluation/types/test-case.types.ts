@@ -1,5 +1,5 @@
-import { BaseMessage } from '../../core/types/message.types';
-import { TestCase as CoreTestCase } from '../../core/types/message.types';
+import { BaseMessage } from '../../core/types/message.types.js';
+import { TestCase as CoreTestCase } from '../../core/types/message.types.js';
 
 /**
  * Represents a test case for agent evaluation.

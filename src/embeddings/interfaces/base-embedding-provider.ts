@@ -1,5 +1,8 @@
-import { IEmbeddingProvider } from './embedding-provider.interface';
-import { EmbeddingConfig, EmbeddingResponse } from '../types/embedding.types';
+import { IEmbeddingProvider } from './embedding-provider.interface.js';
+import {
+  EmbeddingConfig,
+  EmbeddingResponse,
+} from '../types/embedding.types.js';
 
 /**
  * Abstract base class for embedding providers

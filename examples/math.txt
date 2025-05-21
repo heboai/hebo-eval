@@ -3,3 +3,5 @@ assistant: Let me calculate that for you
 tool use: calculator args: {"operation": "add", "numbers": [2, 2]}
 tool response: 4
 assistant: The answer is 4 
+user: can you write that again in simple terms?
+assistant: The answer is 4

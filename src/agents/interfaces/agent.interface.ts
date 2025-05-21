@@ -51,4 +51,10 @@ export interface IAgent {
    * @returns Promise that resolves when cleanup is complete
    */
   cleanup: () => Promise<void>;
+
+  /**
+   * Creates a clone of the agent with the same configuration
+   * @returns Promise that resolves with a new agent instance
+   */
+  clone?: () => Promise<IAgent>;
 }

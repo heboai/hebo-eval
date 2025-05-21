@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'fs/promises';
 import { join, extname, basename } from 'path';
-import { Parser } from './parser';
-import { TestCase } from '../core/types/message.types';
+import { Parser } from './parser.js';
+import { TestCase } from '../core/types/message.types.js';
 
 /**
  * Result of loading test cases

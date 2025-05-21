@@ -1,4 +1,4 @@
-import { BaseEmbeddingProvider } from '../interfaces/base-embedding-provider';
+import { BaseEmbeddingProvider } from '../interfaces/base-embedding-provider.js';
 import {
   LiteLLMEmbeddingConfig,
   EmbeddingResponse,

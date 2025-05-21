@@ -1,10 +1,7 @@
 user: what are the latest tech news?
 assistant: I'll search for the latest tech news
 tool use: news_search args: {"category": "technology", "limit": 3}
-tool response: 1. AI Breakthrough in Natural Language Processing
-2. New Quantum Computing Milestone Achieved
-3. Major Tech Company Announces Revolutionary Product
-assistant: Here are the top 3 tech news stories:
-1. AI Breakthrough in Natural Language Processing
-2. New Quantum Computing Milestone Achieved
-3. Major Tech Company Announces Revolutionary Product 
+tool response: 1. AI Breakthrough in Natural Language Processing\n 2. New Quantum Computing Milestone Achieved \n 3. Major Tech Company Announces Revolutionary Product 
+assistant: Here are the top 3 tech news stories: \n1. AI Breakthrough in Natural Language Processing\n2. New Quantum Computing Milestone Achieved\n3. Major Tech Company Announces Revolutionary Product 
+user: can you write that again in simple terms?
+assistant: Here are the top 3 tech news stories:\n 1. AI Breakthrough in Natural Language Processing \n2. New Quantum Computing Milestone Achieved\n 3. Major Tech Company Announces Revolutionary Product 
