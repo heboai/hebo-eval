@@ -26,6 +26,71 @@ You can run Hebo Eval without installing it using npx:
 npx hebo-eval
 ```
 
+## Configuration
+
+Hebo Eval can be configured using a YAML configuration file. By default, it looks for `hebo-evals.config.yaml` in the current directory.
+
+### Environment Variables
+
+Hebo Eval supports two ways to use environment variables:
+
+1. **Automatic Fallback**: If you have the required environment variables set, you don't need to specify them in the config file:
+
+   ```bash
+   export OPENAI_API_KEY=your-openai-key
+   export HEBО_API_KEY=your-hebo-key
+   ```
+
+2. **Explicit Interpolation**: You can also explicitly reference environment variables in your config file:
+   ```yaml
+   providers:
+     openai:
+       provider: openai
+       baseUrl: https://api.openai.com/v1
+       apiKey: ${OPENAI_API_KEY}
+   ```
+
+The following environment variables are supported:
+
+- `OPENAI_API_KEY`: API key for OpenAI provider
+- `HEBO_API_KEY`: API key for Hebo provider
+- `HEBO_EMBEDDING_API_KEY`: API key for Hebo embeddings.
+
+### Configuration File
+
+Example configuration file (`hebo-evals.config.yaml`):
+
+```yaml
+providers:
+  openai:
+    provider: openai
+    baseUrl: https://api.openai.com/v1
+    apiKey: ${OPENAI_API_KEY} # Optional if OPENAI_API_KEY is set in environment
+    authHeader:
+      name: Authorization
+      format: Bearer ${OPENAI_API_KEY}
+
+  hebo:
+    provider: hebo
+    baseUrl: https://app.hebo.ai
+    apiKey: ${HEBO_API_KEY} # Optional if HEBО_API_KEY is set in environment
+    authHeader:
+      name: Authorization
+      format: Bearer ${HEBO_API_KEY}
+
+# Default provider to use if not specified in the command
+defaultProvider: hebo
+
+# Embedding configuration
+embedding:
+  provider: hebo
+  model: hebo-embeddings
+  baseUrl: https://api.hebo.ai/v1
+  apiKey: ${HEBO_API_KEY} # Optional if HEBО_API_KEY is set in environment
+```
+
+### Configuration Options
+
 ## Usage
 
 ### Basic Commands

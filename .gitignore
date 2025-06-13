@@ -14,3 +14,4 @@ Thumbs.db
 
 # Local files
 config*.json
+hebo-evals.config.yaml

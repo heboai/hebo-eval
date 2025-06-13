@@ -1,0 +1,30 @@
+# Hebo Eval Configuration Template
+# Copy this file to hebo-evals.config.yaml and replace the values with your own
+
+# Provider configurations
+providers:
+  openai:
+    provider: openai
+    baseUrl: https://api.openai.com/v1
+    apiKey: ${OPENAI_API_KEY} # Will be replaced with the value of OPENAI_API_KEY environment variable
+    authHeader:
+      name: Authorization
+      format: Bearer ${OPENAI_API_KEY} # Can use the same environment variable multiple times
+
+  hebo:
+    provider: hebo
+    baseUrl: https://app.hebo.ai
+    apiKey: ${HEBO_API_KEY} # Will be replaced with the value of HEBО_API_KEY environment variable
+    authHeader:
+      name: Authorization
+      format: Bearer ${HEBO_API_KEY}
+
+# Default provider to use if not specified in the command
+defaultProvider: hebo
+
+# Embedding configuration
+embedding:
+  provider: hebo
+  model: hebo-embeddings
+  baseUrl: https://api.hebo.ai/v1
+  apiKey: ${HEBO_EMBEDDING_API_KEY} # Can reuse the same environment variable

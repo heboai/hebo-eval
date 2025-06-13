@@ -191,7 +191,16 @@ export class Logger {
     if (
       messageStr.includes('API key') ||
       messageStr.includes('Configuration error') ||
-      messageStr.includes('Authentication failed')
+      messageStr.includes('Authentication failed') ||
+      messageStr.includes('Failed to load config') ||
+      messageStr.includes('Invalid API key') ||
+      messageStr.includes('Invalid or inactive API key') ||
+      messageStr.includes('Environment variable') ||
+      messageStr.includes('baseUrl') ||
+      messageStr.includes('provider') ||
+      messageStr.includes('model') ||
+      messageStr.includes('threshold') ||
+      messageStr.includes('max-concurrency')
     ) {
       console.error(Logger.formatMessage(messageStr, 'error'));
       if (meta) {

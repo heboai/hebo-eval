@@ -279,47 +279,18 @@ export class EvaluationExecutor {
     agent: IAgent,
     testCases: TestCase[],
   ): Promise<TestCaseEvaluation[]> {
-    const results: TestCaseEvaluation[] = [];
-    const agentConfig = agent.getConfig();
-    Logger.info(
-      `Executing ${testCases.length} test cases with provider: ${agentConfig.provider}`,
+    return this.executeTestCasesInParallel(
+      agent,
+      testCases,
+      this.maxConcurrency,
     );
-
-    try {
-      for (const testCase of testCases) {
-        try {
-          results.push(await this.executeTestCase(agent, testCase));
-        } catch (error) {
-          Logger.error(`Error executing test case ${testCase.id}:`, {
-            error: error instanceof Error ? error.message : 'Unknown error',
-            provider: agentConfig.provider,
-          });
-          results.push({
-            testCaseId: testCase.id,
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            score: 0,
-            executionTime: 0,
-            response: '',
-            testCase,
-          });
-        }
-      }
-    } catch (error) {
-      Logger.error('Fatal error during test execution:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        provider: agentConfig.provider,
-      });
-    }
-
-    return results;
   }
 
   /**
-   * Executes test cases in parallel with a maximum concurrency
+   * Executes test cases in parallel with a maximum concurrency limit
    * @param agent The agent to test
    * @param testCases The test cases to execute
-   * @param maxConcurrency The maximum number of concurrent executions
+   * @param maxConcurrency Maximum number of concurrent executions
    * @returns Promise that resolves with the evaluation results
    */
   private async executeTestCasesInParallel(
@@ -328,7 +299,13 @@ export class EvaluationExecutor {
     maxConcurrency: number,
   ): Promise<TestCaseEvaluation[]> {
     const results: TestCaseEvaluation[] = [];
+    const chunks: TestCase[][] = [];
     let completedTests = 0;
+
+    // Split test cases into chunks based on maxConcurrency
+    for (let i = 0; i < testCases.length; i += maxConcurrency) {
+      chunks.push(testCases.slice(i, i + maxConcurrency));
+    }
 
     Logger.info(
       `Executing ${testCases.length} test cases in parallel with max concurrency ${maxConcurrency}`,
@@ -337,27 +314,20 @@ export class EvaluationExecutor {
     // Start loading indicator
     Logger.startLoading('Running test cases', testCases.length);
 
-    // Process test cases in chunks to limit concurrency
-    for (let i = 0; i < testCases.length; i += maxConcurrency) {
-      const chunk = testCases.slice(i, i + maxConcurrency);
-      const chunkPromises = chunk.map((testCase) =>
-        this.executeTestCase(agent, testCase).then((result) => {
-          // Update loading progress after each test case completes
-          completedTests++;
-          Logger.updateLoadingProgress(completedTests);
-          return result;
-        }),
+    // Process chunks sequentially, but execute test cases within each chunk in parallel
+    for (const chunk of chunks) {
+      Logger.debug(`Processing chunk of ${chunk.length} test cases`);
+      const chunkResults = await Promise.all(
+        chunk.map((testCase) =>
+          this.executeTestCase(agent, testCase).then((result) => {
+            // Update loading progress after each test case completes
+            completedTests++;
+            Logger.updateLoadingProgress(completedTests);
+            return result;
+          }),
+        ),
       );
-
-      try {
-        const chunkResults = await Promise.all(chunkPromises);
-        results.push(...chunkResults);
-      } catch (error) {
-        Logger.error('Error executing test case chunk:', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-          chunkIndex: i,
-        });
-      }
+      results.push(...chunkResults);
     }
 
     // Stop loading indicator
